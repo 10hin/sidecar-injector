@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.kubernetes.client.admissionreview.models.AdmissionResponse;
 import io.kubernetes.client.admissionreview.models.AdmissionReview;
 import io.kubernetes.client.admissionreview.models.GroupVersionResource;
+import io.kubernetes.client.openapi.models.V1Container;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,15 +111,15 @@ public class InjectorController {
     }
 
     private byte[] createPatch() {
-        final var containerEntry = this.jsonNodeFactory.objectNode()
-                .put("name", "sidecar-nginx")
-                .put("image", "nginx:1.21-alpine")
-                .put("imagePullPolicy", "IfNotPresent");
+        final var container = new V1Container();
+        container.setName("sidecar-nginx");
+        container.setImage("nginx:1.21-alpine");
+        container.setImagePullPolicy("IfNotPresent");
 
         final var addContainerOperation = this.jsonNodeFactory.objectNode()
                 .put("op", "add")
                 .put("path", "/spec/containers/-")
-                .set("value", containerEntry);
+                .putPOJO("value", container);
 
         final var patchArray = this.jsonNodeFactory.arrayNode(1)
                 .add(addContainerOperation);
